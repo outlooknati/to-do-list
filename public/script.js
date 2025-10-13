@@ -1,15 +1,17 @@
-class Task{
-    constructor(description){
+class Task {
+    constructor(description) {
         this.description = description;
         this.completed = false;
     }
 
-    toggleComplete(){
+
+    toggleComplete() {
         this.completed = !this.completed;
     }
 }
 
-class TaskManager{
+
+class TaskManager {
     constructor(){
         this.taskList = document.getElementById('task-list');
         this.loadTasks();
@@ -24,29 +26,30 @@ class TaskManager{
     async addTask(description){
         await fetch('/tasks', {
             method: 'POST',
-            headers: {'Content-type':'application/json'},
-            body: JSON.stringify({description})
+            headers: { 'Content-Type' : 'application/json' },
+            body: JSON.stringify({ description })
         });
         this.loadTasks();
     }
 
     async removeTask(id){
-        await fetch(`/tasks/${id}`, {method: 'DELETE'});
+        await fetch(`/tasks/${id}`, { method: 'DELETE'});
         this.loadTasks();
     }
 
     async toggleTask(id){
-        await fetch(`/task/${id}/toggle`, {method: 'PATCH'});
+        await fetch(`/tasks/${id}/toggle`, { method: 'PATCH'});
+        this.loadTasks();
     }
 
     render(tasks){
-        this.taskList.innerHTML = '',
+        this.taskList.innerHTML = '';
 
         tasks.forEach(task => {
             const li = document.createElement('li');
-            li.className = task.completes ? 'completed' : '';
+            li.className = task.completed ? 'completed' : '';
 
-            const span = document.createElement('button');
+            const span = document.createElement('span');
             span.textContent = task.description;
             span.addEventListener('click', () => this.toggleTask(task.id));
 
@@ -60,14 +63,28 @@ class TaskManager{
             this.taskList.appendChild(li);
         });
     }
-       }
+}
+
 
 document.addEventListener('DOMContentLoaded', () => {
-    const TaskManager = new TaskManager();
+    const taskManager = new TaskManager();
     const addTaskBtn = document.getElementById('add-task-btn');
     const taskInput = document.getElementById('task-input');
 
+
     addTaskBtn.addEventListener('click', () => {
         const taskDescription = taskInput.value.trim();
-    })
-})
+        if (taskDescription) {
+            taskManager.addTask(taskDescription);
+            taskInput.value = '';
+            taskInput.focus();
+        }
+    });
+
+
+    taskInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            addTaskBtn.click();
+        }
+    });
+});
